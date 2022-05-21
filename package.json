@@ -48,13 +48,6 @@
     "typedoc": "^0.22.15",
     "typescript": "^4.6.4"
   },
-  "pnpm": {
-    "peerDependencyRules": {
-      "ignoreMissing": [
-        "@types/node"
-      ]
-    }
-  },
   "scripts": {
     "all": "run-z build,lint,test",
     "bootstrap": "rollup -c",
