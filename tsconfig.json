@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "Node",
+    "module": "ES2015",
+    "target": "ES2022",
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "importsNotUsedAsValues": "error",
+    "noEmitHelpers": true,
+    "lib": ["ES2022"],
+    "types": [],
+    "outDir": "target/js",
+    "sourceMap": true,
+    "newLine": "LF"
+  },
+  "include": ["src/**/*"]
+}

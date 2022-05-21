@@ -1,0 +1,6 @@
+{
+  "entryPoints": ["src/mod.ts"],
+  "name": "Async",
+  "out": "./target/typedoc",
+  "tsconfig": "tsconfig.main.json"
+}

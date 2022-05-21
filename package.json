@@ -1,0 +1,69 @@
+{
+  "name": "@proc7tx/async",
+  "version": "1.0.0-pre.0",
+  "description": "Asynchronous utilities",
+  "keywords": [
+    "async"
+  ],
+  "homepage": "https://github.com/proc7ts/async",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@github.com:proc7ts/async.git"
+  },
+  "license": "MIT",
+  "author": "Ruslan Lopatin <ruslan.lopatin@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/proc7ts/async/issues"
+  },
+  "type": "module",
+  "main": "./dist/async.js",
+  "types": "./index.d.ts",
+  "exports": "./dist/async.js",
+  "dependencies": {
+    "@proc7ts/primitives": "^4.0.0-pre.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^28.1.0",
+    "@run-z/eslint-config": "^3.0.1",
+    "@run-z/rollup-helpers": "^2.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.25.0",
+    "@typescript-eslint/parser": "^5.25.0",
+    "eslint": "^8.15.0",
+    "eslint-plugin-jest": "^26.2.2",
+    "gh-pages": "^4.0.0",
+    "jest": "^28.1.0",
+    "jest-junit": "^13.2.0",
+    "jest-mock": "^28.1.0",
+    "prettier": "^2.6.2",
+    "rollup": "^2.74.1",
+    "rollup-plugin-flat-dts": "^1.4.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "run-z": "=1.10.0-bootstrap",
+    "shx": "^0.3.4",
+    "ts-jest": "^28.0.2",
+    "tslib": "^2.4.0",
+    "typedoc": "^0.22.15",
+    "typescript": "^4.6.4"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@types/node"
+      ]
+    }
+  },
+  "scripts": {
+    "all": "run-z build,lint,test",
+    "bootstrap": "rollup -c",
+    "build": "run-z +z bootstrap",
+    "ci:all": "run-z all +test/--ci/--runInBand",
+    "clean": "run-z +z --then shx rm -rf \"index.d.ts?(.map)\" dist target",
+    "doc": "run-z +z --then typedoc",
+    "doc:publish": "run-z doc --then gh-pages --dist target/typedoc --dotfiles",
+    "format": "run-z +z --then prettier --write \"**/*.{json,md}\"",
+    "lint": "run-z +z --then eslint .",
+    "test": "run-z +z env:NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" --then jest",
+    "z": "run-z +cmd:rollup,+cmd:typedoc,+cmd:eslint,+cmd:jest"
+  }
+}
