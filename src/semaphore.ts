@@ -1,4 +1,4 @@
-import { type Supply, type SupplyPeer } from '@proc7ts/supply';
+import { Supply, type SupplyPeer } from '@proc7ts/supply';
 import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
 
 /**
@@ -8,23 +8,34 @@ import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
  *
  * It is expected that each {@link acquire} is followed by corresponding {@link release}.
  */
-export class Semaphore {
+export class Semaphore implements SupplyPeer {
 
   readonly #maxPermits: number;
   #permits: number;
+  readonly #supply: Supply;
   #head: Semaphore$User | undefined;
   #tail: Semaphore$User | undefined;
 
   /**
    * Constructs a semaphore.
    *
-   * @param maxPermits - The maximum simultaneous {@link acquire acquires} permitted. `1` by default.
-   * @param permits - The number of initially available permits. Defaults to `maxPermits`.
+   * @param init - Either the maximum simultaneous {@link acquire acquires} permitted, or semaphore
+   * {@link SemaphoreInit initialization parameters}. `1` by default.
    */
-  constructor(maxPermits = 1, permits?: number) {
-    this.#maxPermits = Math.max(1, maxPermits);
-    this.#permits
-        = permits == null ? this.#maxPermits : Math.min(Math.max(0, permits), this.#maxPermits);
+  constructor(init: number | SemaphoreInit = 1) {
+    if (typeof init === 'number') {
+      this.#permits = this.#maxPermits = Math.max(1, init);
+      this.#supply = new Supply;
+    } else {
+
+      const { maxPermits = 1, permits, supply = new Supply } = init;
+
+      this.#maxPermits = Math.max(1, maxPermits);
+      this.#permits = permits == null
+          ? this.#maxPermits
+          : Math.min(Math.max(0, permits), this.#maxPermits);
+      this.#supply = supply;
+    }
   }
 
   /**
@@ -45,6 +56,16 @@ export class Semaphore {
   }
 
   /**
+   * Semaphore supply.
+   *
+   * No more locks can not be acquired one this supply cut off. All {@link Semaphore.acquire} method calls would
+   * result to an error after that.
+   */
+  get supply(): Supply {
+    return this.#supply;
+  }
+
+  /**
    * Acquires lock.
    *
    * Decreases the number of available {@link permits} when available, or blocks until one available.
@@ -55,12 +76,13 @@ export class Semaphore {
    * {@link release} call.
    */
   acquire(acquirer?: SupplyPeer): Promise<void> {
-    const supply = acquirer?.supply;
+    const supply = acquirer ? acquirer.supply.needs(this) : this.supply;
 
-    if (supply?.isOff) {
-      return new Promise<void>((_, reject) => supply.whenOff(
-          (reason: unknown = new SemaphoreRevokeError()) => reject(reason),
-      ));
+    if (supply.isOff) {
+
+      const { reason = new SemaphoreRevokeError } = supply;
+
+      return Promise.reject(reason);
     }
 
     if (this.#permits > 0) {
@@ -116,6 +138,31 @@ export class Semaphore {
       this.#tail = undefined;
     }
   }
+
+}
+
+/**
+ * Semaphore initialization parameters.
+ */
+export interface SemaphoreInit {
+
+  /**
+   * The maximum simultaneous {@link Semaphore.acquire acquires} permitted. `1` by default.
+   */
+  readonly maxPermits?: number | undefined;
+
+  /**
+   * The number of initially available permits. Defaults to {@link maxPermits}.
+   */
+  readonly permits?: number | undefined;
+
+  /**
+   * Explicit semaphore supply.
+   *
+   * No more locks can not be acquired one this supply cut off. All {@link Semaphore.acquire} method calls would
+   * result to an error after that.
+   */
+  readonly supply?: Supply | undefined;
 
 }
 
