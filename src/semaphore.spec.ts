@@ -60,7 +60,7 @@ describe('Semaphore', () => {
     semaphore.release();
     expect(semaphore.permits).toBe(3);
 
-    semaphore.release();
+    expect(() => semaphore.release()).toThrow(new TypeError('All locks released already'));
     expect(semaphore.permits).toBe(3);
   });
   it('awaits for permit release', async () => {
@@ -86,10 +86,10 @@ describe('Semaphore', () => {
     semaphore.release();
     expect(semaphore.permits).toBe(1);
 
-    semaphore.release();
+    expect(() => semaphore.release()).toThrow(new TypeError('All locks released already'));
     expect(semaphore.permits).toBe(1);
   });
-  it('supports multiple waiters', async () => {
+  it('supports multiple users', async () => {
     const semaphore = new Semaphore();
 
     expect(await semaphore.acquire()).toBeUndefined();

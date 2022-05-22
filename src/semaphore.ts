@@ -126,8 +126,10 @@ export class Semaphore implements SupplyPeer {
   release(): void {
     if (this.#head) {
       this.#setHead(this.#head.grant());
+    } else if (this.#permits < this.#maxPermits) {
+      ++this.#permits;
     } else {
-      this.#permits = Math.min(this.#permits + 1, this.#maxPermits);
+      throw new TypeError('All locks released already');
     }
   }
 
