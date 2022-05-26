@@ -11,8 +11,8 @@ import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
 export class Semaphore implements SupplyPeer {
 
   readonly #maxPermits: number;
-  #permits: number;
   readonly #supply: Supply;
+  #permits: number;
   #head: Semaphore$User | undefined;
   #tail: Semaphore$User | undefined;
 
@@ -76,6 +76,7 @@ export class Semaphore implements SupplyPeer {
    * {@link release} call.
    */
   acquire(acquirer?: SupplyPeer): Promise<void> {
+
     const supply = acquirer ? acquirer.supply.needs(this) : this.supply;
 
     if (supply.isOff) {
@@ -91,30 +92,31 @@ export class Semaphore implements SupplyPeer {
       return Promise.resolve();
     }
 
-    return new Promise<void>((give, reject) => {
-      const user = this.#use(give, reject, supply);
-
-      this.#tail = this.#tail?.add(user) || (this.#head = user);
+    return new Promise<void>((give, revoke) => {
+      this.#use(give, revoke, supply);
     });
   }
 
   #use(
       grant: () => void,
       revoke: (reason?: unknown) => void,
-      supply: Supply | undefined,
-  ): Semaphore$User {
-    if (supply) {
-      const whenRevoked = (reason: unknown = new SemaphoreRevokeError()): void => {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        this.#setHead(user.revoke(reason));
-      };
-
-      supply.whenOff(whenRevoked);
-    }
+      supply: Supply,
+  ): void {
 
     const user = new Semaphore$User(grant, revoke);
 
-    return user;
+    if (this.#tail) {
+      user.prev = this.#tail;
+      this.#tail.next = user;
+      this.#tail = user;
+    } else {
+      this.#head = this.#tail = user;
+    }
+
+    supply.whenOff((reason: unknown = new SemaphoreRevokeError()): void => {
+      this.#remove(user);
+      user.revoke(reason);
+    });
   }
 
   /**
@@ -124,8 +126,12 @@ export class Semaphore implements SupplyPeer {
    * receives it, while the rest continue to wait.
    */
   release(): void {
-    if (this.#head) {
-      this.#setHead(this.#head.grant());
+
+    const head = this.#head;
+
+    if (head) {
+      this.#remove(head);
+      head.grant();
     } else if (this.#permits < this.#maxPermits) {
       ++this.#permits;
     } else {
@@ -133,11 +139,21 @@ export class Semaphore implements SupplyPeer {
     }
   }
 
-  #setHead(head: Semaphore$User | undefined): void {
-    this.#head = head;
+  #remove(user: Semaphore$User): void {
 
-    if (!head) {
-      this.#tail = undefined;
+    const { prev, next } = user;
+
+    if (prev) {
+      prev.next = next;
+      delete user.prev;
+    } else {
+      this.#head = next;
+    }
+    if (next) {
+      next.prev = prev;
+      delete user.next;
+    } else {
+      this.#tail = prev;
     }
   }
 
@@ -172,27 +188,20 @@ class Semaphore$User {
 
   readonly #grant: () => void;
   readonly #revoke: (reason: unknown) => void;
-  #next: Semaphore$User | undefined;
+  prev?: Semaphore$User;
+  next?: Semaphore$User;
 
   constructor(grant: () => void, revoke: (reason: unknown) => void) {
     this.#grant = grant;
     this.#revoke = revoke;
   }
 
-  add(next: Semaphore$User): Semaphore$User {
-    return this.#next?.add(next) || (this.#next = next);
-  }
-
-  grant(): Semaphore$User | undefined {
+  grant(): void {
     this.#grant();
-
-    return this.#next;
   }
 
-  revoke(reason: unknown): Semaphore$User | undefined {
+  revoke(reason: unknown): void {
     this.#revoke(reason);
-
-    return this.#next;
   }
 
 }

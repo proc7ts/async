@@ -217,5 +217,71 @@ describe('Semaphore', () => {
       semaphore.release();
       expect(semaphore.permits).toBe(1);
     });
+    it('releases the first lock', async () => {
+      const semaphore = new Semaphore({ permits: 0 });
+      const supply = new Supply();
+
+      const first = semaphore.acquire(supply);
+      const second = semaphore.acquire();
+      const third = semaphore.acquire();
+
+      supply.off();
+
+      await expect(first).rejects.toThrow();
+
+      semaphore.release();
+      await expect(second).resolves.toBeUndefined();
+
+      semaphore.release();
+      await expect(third).resolves.toBeUndefined();
+      expect(semaphore.permits).toBe(0);
+
+      semaphore.release();
+      expect(semaphore.permits).toBe(1);
+    });
+    it('releases the middle lock', async () => {
+      const semaphore = new Semaphore({ permits: 0 });
+      const supply = new Supply();
+
+      const first = semaphore.acquire();
+      const second = semaphore.acquire(supply);
+      const third = semaphore.acquire();
+
+      supply.off();
+
+      await expect(second).rejects.toThrow();
+
+      semaphore.release();
+      await expect(first).resolves.toBeUndefined();
+
+      semaphore.release();
+      await expect(third).resolves.toBeUndefined();
+      expect(semaphore.permits).toBe(0);
+
+      semaphore.release();
+      expect(semaphore.permits).toBe(1);
+    });
+    it('releases the last lock', async () => {
+      const semaphore = new Semaphore({ permits: 0 });
+      const supply = new Supply();
+
+      const first = semaphore.acquire();
+      const second = semaphore.acquire();
+      const third = semaphore.acquire(supply);
+
+      supply.off();
+
+      await expect(third).rejects.toThrow();
+
+      semaphore.release();
+      await expect(first).resolves.toBeUndefined();
+
+      semaphore.release();
+      await expect(second).resolves.toBeUndefined();
+      expect(semaphore.permits).toBe(0);
+
+      semaphore.release();
+      expect(semaphore.permits).toBe(1);
+    });
   });
 });
