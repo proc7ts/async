@@ -48,6 +48,13 @@
     "typedoc": "^0.22.15",
     "typescript": "^4.6.4"
   },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "typescript": "4.7"
+      }
+    }
+  },
   "scripts": {
     "all": "run-z build,lint,test",
     "bootstrap": "rollup -c",
