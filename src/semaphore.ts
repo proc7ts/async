@@ -117,16 +117,16 @@ export class Semaphore implements SupplyPeer {
       this.#head = this.#tail = user;
     }
 
-    const supplyTarget = {
+    const supplyReceiver = {
       isOff: false,
       off: (reason: unknown = new SemaphoreRevokeError()) => user.revoke(reason),
     };
 
-    supply.to(supplyTarget);
+    supply.to(supplyReceiver);
 
     function done(): void {
-      supplyTarget.isOff = true;
-      supplyTarget.off = noop;
+      supplyReceiver.isOff = true;
+      supplyReceiver.off = noop;
     }
   }
 
