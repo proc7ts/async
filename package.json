@@ -16,11 +16,13 @@
     "url": "https://github.com/proc7ts/async/issues"
   },
   "type": "module",
-  "main": "./dist/async.js",
   "types": "./index.d.ts",
-  "exports": "./dist/async.js",
+  "exports": {
+    "types": "./index.d.ts",
+    "default": "./dist/async.js"
+  },
   "dependencies": {
-    "@proc7ts/primitives": "^4.0.0-pre.0",
+    "@proc7ts/primitives": "4.0.0-pre.1",
     "@proc7ts/supply": "^2.0.0-pre.0"
   },
   "devDependencies": {
