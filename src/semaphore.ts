@@ -1,5 +1,5 @@
 import { noop } from '@proc7ts/primitives';
-import { Supply, type SupplyPeer, SupplyReceiver } from '@proc7ts/supply';
+import { Supplier, Supply, type SupplyPeer } from '@proc7ts/supply';
 import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
 
 /**
@@ -71,14 +71,14 @@ export class Semaphore implements SupplyPeer {
    *
    * Decreases the number of available {@link permits} when available, or blocks until one available.
    *
-   * @params acquirer - Semaphore acquirer supply. The returned promise would be rejected once this supply cut off.
+   * @params acquirer - Semaphore acquirer supplier. The returned promise would be rejected once this supply cut off.
    *
    * @returns A promise resolved immediately if permit available, or one resolved once permit becomes available after
    * {@link release} call.
    */
-  acquire(acquirer?: SupplyPeer<SupplyReceiver>): Promise<void> {
+  acquire(acquirer?: SupplyPeer<Supplier>): Promise<void> {
 
-    const supply = acquirer ? Supply.receiving(acquirer).needs(this) : this.supply;
+    const supply = acquirer ? new Supply().needs(this).needs(acquirer) : this.supply;
 
     if (supply.isOff) {
 

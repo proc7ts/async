@@ -194,7 +194,7 @@ describe('Semaphore', () => {
 
       await expect(promise).rejects.toThrow(new SemaphoreRevokeError());
       expect(semaphore.permits).toBe(0);
-      expect(supply.isOff).toBe(true);
+      expect(supply.isOff).toBe(false);
 
       semaphore.release();
       expect(semaphore.permits).toBe(1);
@@ -212,7 +212,7 @@ describe('Semaphore', () => {
 
       await expect(promise).rejects.toThrow(reason);
       expect(semaphore.permits).toBe(0);
-      expect(supply.isOff).toBe(true);
+      expect(supply.isOff).toBe(false);
 
       semaphore.release();
       expect(semaphore.permits).toBe(1);
