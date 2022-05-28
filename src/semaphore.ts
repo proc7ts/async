@@ -1,3 +1,4 @@
+import { noop } from '@proc7ts/primitives';
 import { Supply, type SupplyPeer } from '@proc7ts/supply';
 import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
 
@@ -103,7 +104,10 @@ export class Semaphore implements SupplyPeer {
       supply: Supply,
   ): void {
 
-    const user = new Semaphore$User(grant, revoke);
+    const user = new Semaphore$User(grant, revoke, user => {
+      this.#remove(user);
+      done();
+    });
 
     if (this.#tail) {
       user.prev = this.#tail;
@@ -113,10 +117,17 @@ export class Semaphore implements SupplyPeer {
       this.#head = this.#tail = user;
     }
 
-    supply.whenOff((reason: unknown = new SemaphoreRevokeError()): void => {
-      this.#remove(user);
-      user.revoke(reason);
-    });
+    const supplyTarget = {
+      isOff: false,
+      off: (reason: unknown = new SemaphoreRevokeError()) => user.revoke(reason),
+    };
+
+    supply.to(supplyTarget);
+
+    function done(): void {
+      supplyTarget.isOff = true;
+      supplyTarget.off = noop;
+    }
   }
 
   /**
@@ -130,7 +141,6 @@ export class Semaphore implements SupplyPeer {
     const head = this.#head;
 
     if (head) {
-      this.#remove(head);
       head.grant();
     } else if (this.#permits < this.#maxPermits) {
       ++this.#permits;
@@ -186,22 +196,28 @@ export interface SemaphoreInit {
 
 class Semaphore$User {
 
-  readonly #grant: () => void;
-  readonly #revoke: (reason: unknown) => void;
+  #grant: () => void;
+  #revoke: (reason: unknown) => void;
+  #drop: (user: Semaphore$User) => void;
   prev?: Semaphore$User;
   next?: Semaphore$User;
 
-  constructor(grant: () => void, revoke: (reason: unknown) => void) {
+  constructor(grant: () => void, revoke: (reason: unknown) => void, drop: (user: Semaphore$User) => void) {
     this.#grant = grant;
     this.#revoke = revoke;
+    this.#drop = drop;
   }
 
   grant(): void {
+    this.#drop(this);
     this.#grant();
+    this.#drop = this.#grant = this.#revoke = noop;
   }
 
   revoke(reason: unknown): void {
+    this.#drop(this);
     this.#revoke(reason);
+    this.#drop = this.#grant = this.#revoke = noop;
   }
 
 }
