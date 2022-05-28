@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { neverSupply, Supply } from '@proc7ts/supply';
-import { Semaphore } from './semaphore';
 import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
+import { Semaphore } from './semaphore.js';
 
 describe('Semaphore', () => {
   it('makes the number of max permits at least 1', () => {
