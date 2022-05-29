@@ -122,7 +122,7 @@ export class Semaphore {
       off: (reason: unknown = new SemaphoreRevokeError()) => user.revoke(reason),
     };
 
-    supply.cuts(supplyReceiver);
+    supply.alsoOff(supplyReceiver);
 
     function done(): void {
       supplyReceiver.isOff = true;
