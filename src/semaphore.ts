@@ -1,5 +1,5 @@
 import { noop } from '@proc7ts/primitives';
-import { Supplier, Supply, type SupplyPeer } from '@proc7ts/supply';
+import { Supplier, Supply } from '@proc7ts/supply';
 import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
 
 /**
@@ -9,7 +9,7 @@ import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
  *
  * It is expected that each {@link acquire} is followed by corresponding {@link release}.
  */
-export class Semaphore implements SupplyPeer {
+export class Semaphore {
 
   readonly #maxPermits: number;
   readonly #supply: Supply;
@@ -76,15 +76,15 @@ export class Semaphore implements SupplyPeer {
    * @returns A promise resolved immediately if permit available, or one resolved once permit becomes available after
    * {@link release} call.
    */
-  acquire(acquirer?: SupplyPeer<Supplier>): Promise<void> {
+  acquire(acquirer?: Supplier): Promise<void> {
 
-    const supply = acquirer ? new Supply().needs(this).needs(acquirer) : this.supply;
+    const supply = acquirer ? this.supply.derive().needs(acquirer) : this.supply;
 
     if (supply.isOff) {
 
-      const { reason = new SemaphoreRevokeError } = supply;
+      const { whyOff = new SemaphoreRevokeError } = supply;
 
-      return Promise.reject(reason);
+      return Promise.reject(whyOff);
     }
 
     if (this.#permits > 0) {
@@ -122,7 +122,7 @@ export class Semaphore implements SupplyPeer {
       off: (reason: unknown = new SemaphoreRevokeError()) => user.revoke(reason),
     };
 
-    supply.to(supplyReceiver);
+    supply.cuts(supplyReceiver);
 
     function done(): void {
       supplyReceiver.isOff = true;
