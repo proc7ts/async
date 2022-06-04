@@ -19,14 +19,15 @@ export default defineConfig({
   ],
   external: externalModules(),
   output: {
-    dir: '.',
+    dir: 'dist',
     format: 'esm',
     sourcemap: true,
-    entryFileNames: 'dist/[name].js',
+    entryFileNames: '[name].js',
     plugins: [
       flatDts({
         tsconfig: 'tsconfig.main.json',
         lib: true,
+        file: 'async.d.ts',
         compilerOptions: {
           declarationMap: true,
         },
