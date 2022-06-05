@@ -7,7 +7,7 @@ import { lazyValue, noop } from '@proc7ts/primitives';
  *
  * The methods of this object do not require `this` context and can be called as functions.
  */
-export class PromiseResolver<T = void> {
+export class PromiseResolver<in out T = void> {
 
   /**
    * Resolves the promise.
