@@ -1,5 +1,5 @@
 import { noop } from '@proc7ts/primitives';
-import { Supplier, Supply } from '@proc7ts/supply';
+import { Supplier, Supply, SupplyIsOff, SupplyReceiver } from '@proc7ts/supply';
 import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
 
 /**
@@ -82,9 +82,9 @@ export class Semaphore {
 
     if (supply.isOff) {
 
-      const { whyOff = new SemaphoreRevokeError } = supply;
+      const { error = new SemaphoreRevokeError } = supply.isOff;
 
-      return Promise.reject(whyOff);
+      return Promise.reject(error);
     }
 
     if (this.#permits > 0) {
@@ -117,15 +117,20 @@ export class Semaphore {
       this.#head = this.#tail = user;
     }
 
-    const supplyReceiver = {
-      isOff: false,
-      off: (reason: unknown = new SemaphoreRevokeError()) => user.revoke(reason),
+    const supplyReceiver: { -readonly [TKey in keyof SupplyReceiver]: SupplyReceiver[TKey] } = {
+      isOff: undefined,
+      off: reason => {
+
+        const { error = new SemaphoreRevokeError } = reason;
+
+        user.revoke(error);
+      },
     };
 
     supply.alsoOff(supplyReceiver);
 
     function done(): void {
-      supplyReceiver.isOff = true;
+      supplyReceiver.isOff = new SupplyIsOff();
       supplyReceiver.off = noop;
     }
   }
