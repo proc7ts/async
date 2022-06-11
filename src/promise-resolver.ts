@@ -38,7 +38,7 @@ export class PromiseResolver<in out T = void> {
    *
    * @returns Created promise.
    */
-  readonly promise: (this: void) => Promise<T>;
+  readonly whenDone: (this: void) => Promise<T>;
 
   constructor() {
 
@@ -63,7 +63,7 @@ export class PromiseResolver<in out T = void> {
 
     this.resolve = value => resolvePromise(value);
     this.reject = reason => rejectPromise(reason);
-    this.promise = () => buildPromise();
+    this.whenDone = () => buildPromise();
   }
 
 }

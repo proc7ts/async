@@ -15,30 +15,30 @@ describe('newPromiseResolver', () => {
       resolver.resolve('foo');
       resolver.resolve('bar');
 
-      const promise = resolver.promise();
+      const promise = resolver.whenDone();
 
       expect(await promise).toBe('foo');
-      expect(promise).toBe(resolver.promise());
+      expect(promise).toBe(resolver.whenDone());
     });
     it('resolves the promise after its construction', async () => {
 
-      const promise = resolver.promise();
+      const promise = resolver.whenDone();
 
       resolver.resolve('foo');
       resolver.resolve('bar');
 
       expect(await promise).toBe('foo');
-      expect(promise).toBe(resolver.promise());
+      expect(promise).toBe(resolver.whenDone());
     });
     it('resolves the promise by another one', async () => {
 
-      const promise = resolver.promise();
+      const promise = resolver.whenDone();
 
       resolver.resolve(Promise.resolve('foo'));
       resolver.resolve(Promise.resolve('bar'));
 
       expect(await promise).toBe('foo');
-      expect(promise).toBe(resolver.promise());
+      expect(promise).toBe(resolver.whenDone());
     });
     it('resolves the void-value promise', async () => {
 
@@ -48,10 +48,10 @@ describe('newPromiseResolver', () => {
       voidResolver.resolve(void 0);
       voidResolver.resolve(Promise.resolve());
 
-      const promise = voidResolver.promise();
+      const promise = voidResolver.whenDone();
 
       expect(await promise).toBeUndefined();
-      expect(promise).toBe(voidResolver.promise());
+      expect(promise).toBe(voidResolver.whenDone());
     });
   });
 
@@ -69,31 +69,31 @@ describe('newPromiseResolver', () => {
       resolver.reject(error1);
       resolver.reject(error2);
 
-      const promise = resolver.promise();
+      const promise = resolver.whenDone();
 
       expect(await promise.catch(asis)).toBe(error1);
-      expect(promise).toBe(resolver.promise());
+      expect(promise).toBe(resolver.whenDone());
     });
     it('rejects the promise after its construction', async () => {
 
-      const promise = resolver.promise();
+      const promise = resolver.whenDone();
 
       resolver.reject(error1);
       resolver.reject(error2);
 
       expect(await promise.catch(asis)).toBe(error1);
-      expect(promise).toBe(resolver.promise());
+      expect(promise).toBe(resolver.whenDone());
     });
   });
 
   describe('promise', () => {
     it('builds the promise once', () => {
 
-      const promise = resolver.promise();
+      const promise = resolver.whenDone();
 
-      expect(resolver.promise()).toBe(promise);
-      expect(resolver.promise()).toBe(promise);
-      expect(resolver.promise()).toBe(promise);
+      expect(resolver.whenDone()).toBe(promise);
+      expect(resolver.whenDone()).toBe(promise);
+      expect(resolver.whenDone()).toBe(promise);
     });
   });
 
