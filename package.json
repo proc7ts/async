@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@proc7ts/primitives": "4.0.0-pre.1",
-    "@proc7ts/supply": "2.0.0-pre.10"
+    "@proc7ts/supply": "2.0.0-pre.11"
   },
   "devDependencies": {
     "@jest/globals": "^28.1.1",
