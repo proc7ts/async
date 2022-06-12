@@ -1,5 +1,6 @@
 {
   "entryPoints": ["src/mod.ts"],
+  "excludePrivate": true,
   "name": "Async",
   "out": "./target/typedoc",
   "tsconfig": "tsconfig.main.json"
