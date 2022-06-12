@@ -119,7 +119,7 @@ export class Semaphore {
 
     const supplyReceiver: { -readonly [TKey in keyof SupplyReceiver]: SupplyReceiver[TKey] } = {
       isOff: null,
-      off: reason => {
+      cutOff: reason => {
 
         const { error = new SemaphoreRevokeError } = reason;
 
@@ -131,7 +131,7 @@ export class Semaphore {
 
     function done(): void {
       supplyReceiver.isOff = new SupplyIsOff();
-      supplyReceiver.off = noop;
+      supplyReceiver.cutOff = noop;
     }
   }
 
