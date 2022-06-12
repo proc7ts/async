@@ -150,7 +150,7 @@ describe('Semaphore', () => {
 
     await expect(promise).rejects.toThrow(new SemaphoreRevokeError());
     expect(semaphore.permits).toBe(0);
-    expect(semaphore.supply.isOff).toBeUndefined();
+    expect(semaphore.supply.isOff).toBeNull();
 
     semaphore.release();
     expect(semaphore.permits).toBe(1);
@@ -168,7 +168,7 @@ describe('Semaphore', () => {
 
     await expect(promise).rejects.toThrow(reason);
     expect(semaphore.permits).toBe(0);
-    expect(semaphore.supply.isOff).toBeUndefined();
+    expect(semaphore.supply.isOff).toBeNull();
 
     semaphore.release();
     expect(semaphore.permits).toBe(1);
@@ -194,7 +194,7 @@ describe('Semaphore', () => {
 
       await expect(promise).rejects.toThrow(new SemaphoreRevokeError());
       expect(semaphore.permits).toBe(0);
-      expect(supply.isOff).toBeUndefined();
+      expect(supply.isOff).toBeNull();
 
       semaphore.release();
       expect(semaphore.permits).toBe(1);
@@ -212,7 +212,7 @@ describe('Semaphore', () => {
 
       await expect(promise).rejects.toThrow(reason);
       expect(semaphore.permits).toBe(0);
-      expect(supply.isOff).toBeUndefined();
+      expect(supply.isOff).toBeNull();
 
       semaphore.release();
       expect(semaphore.permits).toBe(1);
