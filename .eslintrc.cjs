@@ -27,7 +27,7 @@ module.exports = {
         '@run-z/eslint-config/jest',
       ],
       parserOptions: {
-        project: './tsconfig.spec.json',
+        project: './tsconfig.json',
       },
     },
   ],
