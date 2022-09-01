@@ -42,6 +42,7 @@
     "jest-junit": "^14.0.1",
     "jest-mock": "^29.0.1",
     "prettier": "^2.7.1",
+    "prettier-eslint-cli": "^7.1.0",
     "rollup": "^2.79.0",
     "run-z": "=1.10.0-bootstrap",
     "shx": "^0.3.4",
@@ -58,7 +59,7 @@
     "clean": "run-z +z --then shx rm -rf dist target",
     "doc": "run-z +z --then typedoc",
     "doc:publish": "run-z doc --then gh-pages --dist target/typedoc --dotfiles",
-    "format": "run-z +z --then prettier --write \"**/*.{json,md}\"",
+    "format": "run-z +z --then prettier-eslint --write --include-dot-files \"src/**/*.*\" \"*.{js,cjs,mjs,json,md}\"",
     "lint": "run-z +z --then eslint .",
     "test": "run-z +z env:NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" --then jest",
     "z": "run-z +cmd:rollup,+cmd:typedoc,+cmd:eslint,+cmd:jest"

@@ -177,7 +177,7 @@ describe('Semaphore', () => {
     const semaphore = new Semaphore();
     const supply = neverSupply();
 
-    await expect(semaphore.acquire(supply)).rejects.toThrow(new SemaphoreRevokeError);
+    await expect(semaphore.acquire(supply)).rejects.toThrow(new SemaphoreRevokeError());
     expect(semaphore.permits).toBe(1);
   });
 

@@ -3,7 +3,6 @@ import { asis } from '@proc7ts/primitives';
 import { PromiseResolver } from './promise-resolver.js';
 
 describe('newPromiseResolver', () => {
-
   let resolver: PromiseResolver<string>;
 
   beforeEach(() => {
@@ -21,7 +20,6 @@ describe('newPromiseResolver', () => {
       expect(promise).toBe(resolver.whenDone());
     });
     it('resolves the promise after its construction', async () => {
-
       const promise = resolver.whenDone();
 
       resolver.resolve('foo');
@@ -31,7 +29,6 @@ describe('newPromiseResolver', () => {
       expect(promise).toBe(resolver.whenDone());
     });
     it('resolves the promise by another one', async () => {
-
       const promise = resolver.whenDone();
 
       resolver.resolve(Promise.resolve('foo'));
@@ -41,7 +38,6 @@ describe('newPromiseResolver', () => {
       expect(promise).toBe(resolver.whenDone());
     });
     it('resolves the void-value promise', async () => {
-
       const voidResolver = new PromiseResolver<void>();
 
       voidResolver.resolve();
@@ -56,7 +52,6 @@ describe('newPromiseResolver', () => {
   });
 
   describe('reject', () => {
-
     let error1: Error;
     let error2: Error;
 
@@ -75,7 +70,6 @@ describe('newPromiseResolver', () => {
       expect(promise).toBe(resolver.whenDone());
     });
     it('rejects the promise after its construction', async () => {
-
       const promise = resolver.whenDone();
 
       resolver.reject(error1);
@@ -88,7 +82,6 @@ describe('newPromiseResolver', () => {
 
   describe('promise', () => {
     it('builds the promise once', () => {
-
       const promise = resolver.whenDone();
 
       expect(resolver.whenDone()).toBe(promise);
@@ -96,5 +89,4 @@ describe('newPromiseResolver', () => {
       expect(resolver.whenDone()).toBe(promise);
     });
   });
-
 });

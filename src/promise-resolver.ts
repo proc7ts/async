@@ -41,13 +41,14 @@ export class PromiseResolver<in out T = void> {
   readonly whenDone: (this: void) => Promise<T>;
 
   constructor() {
-
     let resolvePromise: (value: T | PromiseLike<T>) => void;
     let rejectPromise: (reason?: unknown) => void;
-    let buildPromise = lazyValue(() => new Promise<T>((resolve, reject) => {
-      resolvePromise = resolve;
-      rejectPromise = reject;
-    }));
+    let buildPromise = lazyValue(
+      () => new Promise<T>((resolve, reject) => {
+          resolvePromise = resolve;
+          rejectPromise = reject;
+        }),
+    );
     const settle = (resolution: () => Promise<T>): void => {
       buildPromise = lazyValue(resolution);
       resolvePromise = noop;

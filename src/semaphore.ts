@@ -26,15 +26,13 @@ export class Semaphore {
   constructor(init: number | SemaphoreInit = 1) {
     if (typeof init === 'number') {
       this.#permits = this.#maxPermits = Math.max(1, init);
-      this.#supply = new Supply;
+      this.#supply = new Supply();
     } else {
-
-      const { maxPermits = 1, permits, supply = new Supply } = init;
+      const { maxPermits = 1, permits, supply = new Supply() } = init;
 
       this.#maxPermits = Math.max(1, maxPermits);
-      this.#permits = permits == null
-          ? this.#maxPermits
-          : Math.min(Math.max(0, permits), this.#maxPermits);
+      this.#permits
+        = permits == null ? this.#maxPermits : Math.min(Math.max(0, permits), this.#maxPermits);
       this.#supply = supply;
     }
   }
@@ -77,12 +75,10 @@ export class Semaphore {
    * {@link release} call.
    */
   acquire(acquirer?: Supplier): Promise<void> {
-
     const supply = acquirer ? this.supply.derive().needs(acquirer) : this.supply;
 
     if (supply.isOff) {
-
-      const { error = new SemaphoreRevokeError } = supply.isOff;
+      const { error = new SemaphoreRevokeError() } = supply.isOff;
 
       return Promise.reject(error);
     }
@@ -98,12 +94,7 @@ export class Semaphore {
     });
   }
 
-  #use(
-      grant: () => void,
-      revoke: (reason?: unknown) => void,
-      supply: Supply,
-  ): void {
-
+  #use(grant: () => void, revoke: (reason?: unknown) => void, supply: Supply): void {
     const user = new Semaphore$User(grant, revoke, user => {
       this.#remove(user);
       done();
@@ -120,8 +111,7 @@ export class Semaphore {
     const supplyReceiver: { -readonly [TKey in keyof SupplyReceiver]: SupplyReceiver[TKey] } = {
       isOff: null,
       cutOff: reason => {
-
-        const { error = new SemaphoreRevokeError } = reason;
+        const { error = new SemaphoreRevokeError() } = reason;
 
         user.revoke(error);
       },
@@ -142,7 +132,6 @@ export class Semaphore {
    * receives it, while the rest continue to wait.
    */
   release(): void {
-
     const head = this.#head;
 
     if (head) {
@@ -155,7 +144,6 @@ export class Semaphore {
   }
 
   #remove(user: Semaphore$User): void {
-
     const { prev, next } = user;
 
     if (prev) {
@@ -178,7 +166,6 @@ export class Semaphore {
  * Semaphore initialization parameters.
  */
 export interface SemaphoreInit {
-
   /**
    * The maximum simultaneous {@link Semaphore.acquire acquires} permitted. `1` by default.
    */
@@ -196,7 +183,6 @@ export interface SemaphoreInit {
    * result to an error after that.
    */
   readonly supply?: Supply | undefined;
-
 }
 
 class Semaphore$User {
@@ -207,7 +193,11 @@ class Semaphore$User {
   prev?: Semaphore$User;
   next?: Semaphore$User;
 
-  constructor(grant: () => void, revoke: (reason: unknown) => void, drop: (user: Semaphore$User) => void) {
+  constructor(
+    grant: () => void,
+    revoke: (reason: unknown) => void,
+    drop: (user: Semaphore$User) => void,
+  ) {
     this.#grant = grant;
     this.#revoke = revoke;
     this.#drop = drop;
