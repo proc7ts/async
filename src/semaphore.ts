@@ -31,8 +31,8 @@ export class Semaphore {
       const { maxPermits = 1, permits, supply = new Supply() } = init;
 
       this.#maxPermits = Math.max(1, maxPermits);
-      this.#permits
-        = permits == null ? this.#maxPermits : Math.min(Math.max(0, permits), this.#maxPermits);
+      this.#permits =
+        permits == null ? this.#maxPermits : Math.min(Math.max(0, permits), this.#maxPermits);
       this.#supply = supply;
     }
   }
