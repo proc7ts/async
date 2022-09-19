@@ -6,6 +6,8 @@ import { lazyValue, noop } from '@proc7ts/primitives';
  * Creates the promise only on demand.
  *
  * The methods of this object do not require `this` context and can be called as functions.
+ *
+ * @typeParam T - The type of value the promise resolves to.
  */
 export class PromiseResolver<in out T = void> {
 
