@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 import { asis } from '@proc7ts/primitives';
 import { PromiseResolver } from './promise-resolver.js';
 
-describe('newPromiseResolver', () => {
+describe('PromiseResolver', () => {
   let resolver: PromiseResolver<string>;
 
   beforeEach(() => {
@@ -19,6 +19,15 @@ describe('newPromiseResolver', () => {
       expect(await promise).toBe('foo');
       expect(promise).toBe(resolver.whenDone());
     });
+    it('rejects the promise before its construction', async () => {
+      resolver.resolve(Promise.reject('foo'));
+      resolver.resolve('bar');
+
+      const promise = resolver.whenDone();
+
+      await expect(promise).rejects.toBe('foo');
+      expect(promise).toBe(resolver.whenDone());
+    });
     it('resolves the promise after its construction', async () => {
       const promise = resolver.whenDone();
 
@@ -26,6 +35,15 @@ describe('newPromiseResolver', () => {
       resolver.resolve('bar');
 
       expect(await promise).toBe('foo');
+      expect(promise).toBe(resolver.whenDone());
+    });
+    it('rejects the promise after its construction', async () => {
+      const promise = resolver.whenDone();
+
+      resolver.resolve(Promise.reject('foo'));
+      resolver.resolve('bar');
+
+      await expect(promise).rejects.toBe('foo');
       expect(promise).toBe(resolver.whenDone());
     });
     it('resolves the promise by another one', async () => {
