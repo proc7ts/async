@@ -22,7 +22,7 @@
     "default": "./dist/async.js"
   },
   "dependencies": {
-    "@proc7ts/primitives": "^4.0.0-pre.2",
+    "@proc7ts/primitives": "4.0.0-pre.3",
     "@proc7ts/supply": "^2.0.0-pre.12"
   },
   "devDependencies": {
