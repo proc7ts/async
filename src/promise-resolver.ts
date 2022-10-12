@@ -1,4 +1,4 @@
-import { lazyValue, noop } from '@proc7ts/primitives';
+import { isPromiseLike, lazyValue, noop } from '@proc7ts/primitives';
 
 /**
  * A resolver of promise that can be created later or not created at all.
@@ -58,7 +58,14 @@ export class PromiseResolver<in out T = void> {
     };
 
     resolvePromise = value => {
-      settle(() => Promise.resolve(value));
+      if (isPromiseLike(value)) {
+        const promise = Promise.resolve(value);
+
+        promise.catch(noop);
+        settle(() => promise);
+      } else {
+        settle(() => Promise.resolve(value));
+      }
     };
     rejectPromise = error => {
       settle(() => Promise.reject(error));

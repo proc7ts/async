@@ -67,6 +67,20 @@ describe('PromiseResolver', () => {
       expect(await promise).toBeUndefined();
       expect(promise).toBe(voidResolver.whenDone());
     });
+    it('does not cause unresolved promise rejection before promise construction', async () => {
+      resolver.resolve(Promise.reject('foo'));
+
+      expect(await new Promise(resolve => setTimeout(resolve, 10))).toBeUndefined();
+      await expect(resolver.whenDone()).rejects.toBe('foo');
+    });
+    it('does not cause unresolved promise rejection after promise construction', async () => {
+      const whenDone = resolver.whenDone();
+
+      resolver.resolve(Promise.reject('foo'));
+
+      await expect(whenDone).rejects.toBe('foo');
+      expect(await new Promise(resolve => setTimeout(resolve, 10))).toBeUndefined();
+    });
   });
 
   describe('reject', () => {
