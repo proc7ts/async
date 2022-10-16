@@ -29,7 +29,7 @@
     "@jest/globals": "^29.2.0",
     "@run-z/eslint-config": "^3.2.2",
     "@run-z/prettier-config": "^2.0.0",
-    "@run-z/project-config": "^0.6.2",
+    "@run-z/project-config": "^0.7.0",
     "@swc/core": "^1.3.8",
     "@swc/jest": "^0.2.23",
     "@types/node": "^16.11.65",
@@ -58,7 +58,7 @@
     "clean": "run-z +z --then clean-z",
     "doc": "run-z +z --then typedoc",
     "doc:publish": "run-z doc --then gh-pages --dist target/typedoc --dotfiles",
-    "format": "run-z +z --then prettier-eslint --write --include-dot-files \"src/**/*.*\" \"*.{js,cjs,mjs,json,md}\"",
+    "format": "run-z +z --then prettier-eslint --write --include-dot-files \"src/**/*.*\" \"*.{js,cjs,json,md}\"",
     "lint": "run-z +z --then eslint .",
     "test": "run-z +z env:NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" --then jest",
     "z": "run-z +cmd:rollup,+cmd:typedoc,+cmd:eslint,+cmd:jest"
