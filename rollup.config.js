@@ -1,3 +1,3 @@
-import { ProjectRollup } from '@run-z/project-config/rollup';
+import { configureRollup } from '@run-z/project-config/rollup';
 
-export default ProjectRollup.build();
+export default await configureRollup();

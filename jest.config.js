@@ -1,3 +1,3 @@
-import { ProjectTests } from '@run-z/project-config/jest';
+import { configureJest } from '@run-z/project-config/jest';
 
-export default ProjectTests.build();
+export default await configureJest();
