@@ -29,7 +29,7 @@
     "@jest/globals": "^29.2.2",
     "@run-z/eslint-config": "^3.3.0",
     "@run-z/prettier-config": "^2.0.0",
-    "@run-z/project-config": "^0.8.1",
+    "@run-z/project-config": "^0.9.0",
     "@swc/core": "^1.3.11",
     "@swc/jest": "^0.2.23",
     "@types/node": "^18.11.7",
@@ -52,7 +52,7 @@
   },
   "scripts": {
     "all": "run-z build,lint,test",
-    "bootstrap": "rollup -c",
+    "bootstrap": "build-z",
     "build": "run-z +z bootstrap",
     "ci:all": "run-z all +test/--ci/--runInBand",
     "clean": "run-z +z --then clean-z",
