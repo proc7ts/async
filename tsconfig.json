@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "moduleResolution": "Node16",
-    "module": "ES2020",
+    "module": "Node16",
     "target": "ES2022",
     "strict": true,
     "noFallthroughCasesInSwitch": true,
