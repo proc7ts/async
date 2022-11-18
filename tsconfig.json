@@ -1,21 +1,7 @@
 {
+  "extends": "@run-z/project-config/tsconfig.lib.json",
   "compilerOptions": {
-    "moduleResolution": "Node16",
-    "module": "Node16",
-    "target": "ES2022",
-    "strict": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    "noEmitHelpers": true,
-    "lib": ["ES2022"],
-    "types": [],
-    "outDir": "target/js",
-    "sourceMap": true,
-    "newLine": "LF"
+    "outDir": "target/js"
   },
   "include": ["src/**/*"]
 }

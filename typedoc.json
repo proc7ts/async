@@ -1,6 +1,9 @@
 {
   "entryPoints": ["src/mod.ts"],
   "excludePrivate": true,
-  "name": "Asynchronus Utilities",
-  "out": "./target/typedoc"
+  "name": "Asynchronous Utilities",
+  "out": "./target/typedoc",
+  "compilerOptions": {
+    "module": 7 /* ES2022 */
+  }
 }
