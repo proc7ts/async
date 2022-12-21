@@ -3,7 +3,8 @@
   "version": "1.0.0-pre.5",
   "description": "Asynchronous utilities",
   "keywords": [
-    "async"
+    "async",
+    "semaphore"
   ],
   "homepage": "https://github.com/proc7ts/async",
   "repository": {
