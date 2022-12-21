@@ -1,6 +1,6 @@
 {
   "name": "@proc7ts/async",
-  "version": "1.0.0-pre.5",
+  "version": "1.0.0",
   "description": "Asynchronous utilities",
   "keywords": [
     "async",
