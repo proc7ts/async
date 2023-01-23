@@ -44,7 +44,7 @@
     "prettier": "^2.8.3",
     "prettier-eslint-cli": "^7.1.0",
     "rollup": "^3.10.1",
-    "run-z": "1.10.1-bootstrap",
+    "run-z": "1.11.0-bootstrap",
     "ts-jest": "^29.0.5",
     "tslib": "^2.4.1",
     "typedoc": "^0.23.24",
