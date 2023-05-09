@@ -5,7 +5,7 @@ import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
 /**
  * [Semaphore](https://en.wikipedia.org/wiki/Semaphore_(programming)) instance.
  *
- * Permits preconfigured maximum simultaneous acquires.
+ * Permits pre-configured maximum simultaneous acquires.
  *
  * It is expected that each {@link acquire} is followed by corresponding {@link release}.
  */
@@ -57,7 +57,7 @@ export class Semaphore {
   /**
    * Semaphore supply.
    *
-   * No more locks can not be acquired one this supply cut off. All {@link Semaphore.acquire} method calls would
+   * No more locks can not be acquired one this supply cut off. All {@link Semaphore#acquire} method calls would
    * result to an error after that.
    */
   get supply(): Supply {
@@ -167,7 +167,7 @@ export class Semaphore {
  */
 export interface SemaphoreInit {
   /**
-   * The maximum simultaneous {@link Semaphore.acquire acquires} permitted. `1` by default.
+   * The maximum simultaneous {@link Semaphore#acquire acquires} permitted. `1` by default.
    */
   readonly maxPermits?: number | undefined;
 
@@ -179,7 +179,7 @@ export interface SemaphoreInit {
   /**
    * Explicit semaphore supply.
    *
-   * No more locks can not be acquired one this supply cut off. All {@link Semaphore.acquire} method calls would
+   * No more locks can not be acquired one this supply cut off. All {@link Semaphore#acquire} method calls would
    * result to an error after that.
    */
   readonly supply?: Supply | undefined;
