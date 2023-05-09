@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
-import { asis } from '@proc7ts/primitives';
 import { PromiseResolver } from './promise-resolver.js';
 
 describe('PromiseResolver', () => {
@@ -70,7 +69,7 @@ describe('PromiseResolver', () => {
     it('does not cause unresolved promise rejection before promise construction', async () => {
       resolver.resolve(Promise.reject('foo'));
 
-      expect(await new Promise(resolve => setTimeout(resolve, 10))).toBeUndefined();
+      expect(await new Promise(resolve => setImmediate(resolve))).toBeUndefined();
       await expect(resolver.whenDone()).rejects.toBe('foo');
     });
     it('does not cause unresolved promise rejection after promise construction', async () => {
@@ -79,7 +78,7 @@ describe('PromiseResolver', () => {
       resolver.resolve(Promise.reject('foo'));
 
       await expect(whenDone).rejects.toBe('foo');
-      expect(await new Promise(resolve => setTimeout(resolve, 10))).toBeUndefined();
+      expect(await new Promise(resolve => setImmediate(resolve))).toBeUndefined();
     });
   });
 
@@ -98,7 +97,7 @@ describe('PromiseResolver', () => {
 
       const promise = resolver.whenDone();
 
-      expect(await promise.catch(asis)).toBe(error1);
+      await expect(promise).rejects.toBe(error1);
       expect(promise).toBe(resolver.whenDone());
     });
     it('rejects the promise after its construction', async () => {
@@ -107,12 +106,12 @@ describe('PromiseResolver', () => {
       resolver.reject(error1);
       resolver.reject(error2);
 
-      expect(await promise.catch(asis)).toBe(error1);
+      await expect(promise).rejects.toBe(error1);
       expect(promise).toBe(resolver.whenDone());
     });
   });
 
-  describe('promise', () => {
+  describe('whenDone', () => {
     it('builds the promise once', () => {
       const promise = resolver.whenDone();
 

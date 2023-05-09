@@ -14,9 +14,9 @@ export class PromiseResolver<in out T = void> {
   /**
    * Resolves the promise.
    *
-   * Has no effect when the promised is already settled.
+   * Has no effect when the {@link whenDone resulting} promise already settled.
    *
-   * Can be called before the promise constructed.
+   * Can be called before the resulting promise {@link whenDone created}.
    *
    * @param resolution - Either a promise value, or a promise-like instance resolving to one.
    */
@@ -25,9 +25,9 @@ export class PromiseResolver<in out T = void> {
   /**
    * Rejects the promise.
    *
-   * Has no effect when the promised is already settled.
+   * Has no effect when the {@link whenDone resulting} promise already settled.
    *
-   * Can be called before the promise constructed.
+   * Can be called before the resulting promise {@link whenDone created}.
    *
    * @param reason - Promise rejection reason.
    */
@@ -38,26 +38,21 @@ export class PromiseResolver<in out T = void> {
    *
    * The subsequent calls to this method return the same promise instance.
    *
-   * @returns Created promise.
+   * @returns Resulting promise.
    */
   readonly whenDone: (this: void) => Promise<T>;
 
+  /**
+   * Construct promise resolver.
+   */
   constructor() {
-    let resolvePromise: (value: T | PromiseLike<T>) => void;
-    let rejectPromise: (reason?: unknown) => void;
-    let buildPromise = lazyValue(
-      () => new Promise<T>((resolve, reject) => {
-          resolvePromise = resolve;
-          rejectPromise = reject;
-        }),
-    );
     const settle = (resolution: () => Promise<T>): void => {
       buildPromise = lazyValue(resolution);
       resolvePromise = noop;
       rejectPromise = noop;
     };
 
-    resolvePromise = value => {
+    let resolvePromise = (value: T | PromiseLike<T>): void => {
       if (isPromiseLike(value)) {
         const promise = Promise.resolve(value);
 
@@ -67,9 +62,15 @@ export class PromiseResolver<in out T = void> {
         settle(() => Promise.resolve(value));
       }
     };
-    rejectPromise = error => {
-      settle(() => Promise.reject(error));
+    let rejectPromise = (reason?: unknown): void => {
+      settle(() => Promise.reject(reason));
     };
+    let buildPromise = lazyValue(
+      () => new Promise<T>((resolve, reject) => {
+          resolvePromise = resolve;
+          rejectPromise = reject;
+        }),
+    );
 
     this.resolve = value => resolvePromise(value);
     this.reject = reason => rejectPromise(reason);
