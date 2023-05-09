@@ -1,7 +1,8 @@
 {
   "extends": "@run-z/project-config/tsconfig.lib.json",
   "compilerOptions": {
-    "outDir": "target/js"
+    "outDir": "target/js",
+    "types": []
   },
   "include": ["src/**/*"]
 }
