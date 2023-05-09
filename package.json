@@ -22,6 +22,7 @@
     "types": "./dist/async.d.ts",
     "default": "./dist/async.js"
   },
+  "sideEffects": false,
   "dependencies": {
     "@proc7ts/primitives": "^4.0.0",
     "@proc7ts/supply": "^2.0.0"
