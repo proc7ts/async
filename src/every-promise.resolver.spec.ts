@@ -1,73 +1,68 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
-import { PromiseResolver } from './promise-resolver.js';
+import { EveryPromiseResolver } from './every-promise-resolver.js';
 
-describe('PromiseResolver', () => {
-  let resolver: PromiseResolver<string>;
+describe('EveryPromiseResolver', () => {
+  let resolver: EveryPromiseResolver<string>;
 
   beforeEach(() => {
-    resolver = new PromiseResolver();
+    resolver = new EveryPromiseResolver();
   });
 
-  describe('resolve', () => {
-    it('resolves the promise before its construction', async () => {
-      resolver.resolve('foo');
-      resolver.resolve('bar');
+  describe('add', () => {
+    it('resolves resulting promise before its construction', async () => {
+      resolver.add('foo');
+      resolver.add('bar');
 
       const promise = resolver.whenDone();
 
-      expect(await promise).toBe('foo');
+      expect(await promise).toEqual(['foo', 'bar']);
       expect(promise).toBe(resolver.whenDone());
     });
-    it('rejects the promise before its construction', async () => {
-      resolver.resolve(Promise.reject('foo'));
-      resolver.resolve('bar');
+    it('rejects resulting promise before its construction', async () => {
+      resolver.add(Promise.reject('foo'));
+      resolver.add('bar');
 
       const promise = resolver.whenDone();
 
       await expect(promise).rejects.toBe('foo');
       expect(promise).toBe(resolver.whenDone());
     });
-    it('resolves the promise after its construction', async () => {
+    it('resolves resulting promise after its construction', async () => {
       const promise = resolver.whenDone();
 
-      resolver.resolve('foo');
-      resolver.resolve('bar');
+      resolver.add('foo', 'bar');
+      resolver.add('baz');
 
-      expect(await promise).toBe('foo');
+      expect(await promise).toEqual(['foo', 'bar']);
       expect(promise).toBe(resolver.whenDone());
     });
-    it('rejects the promise after its construction', async () => {
+    it('rejects resulting promise after its construction', async () => {
       const promise = resolver.whenDone();
 
-      resolver.resolve(Promise.reject('foo'));
-      resolver.resolve('bar');
+      resolver.add(Promise.reject('foo'));
+      resolver.add('bar');
 
       await expect(promise).rejects.toBe('foo');
       expect(promise).toBe(resolver.whenDone());
     });
-    it('resolves the promise by another one', async () => {
+    it('resolves resulting promise by another one', async () => {
       const promise = resolver.whenDone();
 
-      resolver.resolve(Promise.resolve('foo'));
-      resolver.resolve(Promise.resolve('bar'));
+      resolver.add(Promise.resolve('foo'), Promise.resolve('bar'));
+      resolver.add(Promise.resolve('baz'));
 
-      expect(await promise).toBe('foo');
+      expect(await promise).toEqual(['foo', 'bar']);
       expect(promise).toBe(resolver.whenDone());
     });
-    it('resolves the void-value promise', async () => {
-      const voidResolver = new PromiseResolver<void>();
+    it('resolves resulting promise to empty array when called without parameters', async () => {
+      const promise = resolver.whenDone();
 
-      voidResolver.resolve();
-      voidResolver.resolve(void 0);
-      voidResolver.resolve(Promise.resolve());
-
-      const promise = voidResolver.whenDone();
-
-      expect(await promise).toBeUndefined();
-      expect(promise).toBe(voidResolver.whenDone());
+      resolver.add();
+      expect(await promise).toEqual([]);
+      expect(promise).toBe(resolver.whenDone());
     });
     it('does not cause unresolved promise rejection before promise construction', async () => {
-      resolver.resolve(Promise.reject('foo'));
+      resolver.add(Promise.reject('foo'));
 
       expect(await new Promise(resolve => setImmediate(resolve))).toBeUndefined();
       await expect(resolver.whenDone()).rejects.toBe('foo');
@@ -75,7 +70,7 @@ describe('PromiseResolver', () => {
     it('does not cause unresolved promise rejection after promise construction', async () => {
       const whenDone = resolver.whenDone();
 
-      resolver.resolve(Promise.reject('foo'));
+      resolver.add(Promise.reject('foo'));
 
       await expect(whenDone).rejects.toBe('foo');
       expect(await new Promise(resolve => setImmediate(resolve))).toBeUndefined();
@@ -118,6 +113,14 @@ describe('PromiseResolver', () => {
       expect(resolver.whenDone()).toBe(promise);
       expect(resolver.whenDone()).toBe(promise);
       expect(resolver.whenDone()).toBe(promise);
+    });
+    it('resolves resulting promise when resolver constructed with parameters', async () => {
+      resolver = new EveryPromiseResolver('foo', 'bar');
+
+      const promise = resolver.whenDone();
+
+      expect(await promise).toEqual(['foo', 'bar']);
+      expect(promise).toBe(resolver.whenDone());
     });
   });
 });

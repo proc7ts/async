@@ -5,10 +5,7 @@ export class SemaphoreRevokeError extends Error {
 
   constructor(message = 'Semaphore revoked', options?: ErrorOptions) {
     super(message, options);
-  }
-
-  get name(): string {
-    return 'SemaphoreRevokeError';
+    this.name = 'SemaphoreRevokeError';
   }
 
 }
