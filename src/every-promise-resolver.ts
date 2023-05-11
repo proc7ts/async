@@ -1,4 +1,4 @@
-import { lazyValue, noop } from '@proc7ts/primitives';
+import { PromiseResolver } from './promise-resolver.js';
 
 /**
  * A resolver of every input promise that can be created later or not created at all.
@@ -56,49 +56,31 @@ export class EveryPromiseResolver<in out T = void> {
    * @param promises - Promises to add to resolution initially.
    */
   constructor(...promises: (T | PromiseLike<T>)[]) {
-    let added: Promise<Awaited<T>[]> = Promise.resolve([]);
-    let done = false;
-    let addPromises = (promises: (T | PromiseLike<T>)[]): void => {
-      if (promises.length) {
-        added = Promise.all([added, Promise.all(promises)]).then(
-          (arrays: Awaited<T>[][]): Awaited<T>[] => arrays.flat(),
-        );
-      }
-      resolvePromise(added);
-      if (done) {
-        addPromises = noop;
-      }
-    };
-    let resolvePromise = (value: T[] | PromiseLike<T[]>): void => {
-      const promise = Promise.resolve(value);
+    const { resolve, reject, whenDone } = new PromiseResolver<T[]>();
+    let added: Promise<T[]> | undefined;
+    let currentRev = 0;
 
-      promise.catch(noop);
-      buildPromise = () => promise;
-    };
-    let rejectPromise = (reason?: unknown): void => {
-      buildPromise = lazyValue(() => Promise.reject(reason));
-      addPromises = noop;
-      resolvePromise = noop;
-      rejectPromise = noop;
-    };
-    let buildPromise = lazyValue(
-      () => new Promise<T[]>((resolve, reject) => {
-          done = true;
-          resolvePromise = resolve;
-          rejectPromise = reject;
-        }),
-    );
+    this.add = (...promises: (T | PromiseLike<T>)[]) => {
+      if (promises.length || !added) {
+        const rev = ++currentRev;
 
-    this.add = (...promises) => {
-      addPromises(promises);
+        added = added
+          ? Promise.all([added, Promise.all(promises)]).then(arrays => arrays.flat())
+          : Promise.all(promises);
+        added.then(result => {
+          if (rev === currentRev) {
+            resolve(result);
+          }
+        }, reject);
+      }
 
       return this;
     };
-    this.reject = reason => rejectPromise(reason);
-    this.whenDone = () => buildPromise();
+    this.reject = reject;
+    this.whenDone = whenDone;
 
     if (promises.length) {
-      addPromises(promises);
+      this.add(...promises);
     }
   }
 

@@ -33,7 +33,7 @@ describe('EveryPromiseResolver', () => {
       resolver.add('foo', 'bar');
       resolver.add('baz');
 
-      expect(await promise).toEqual(['foo', 'bar']);
+      expect(await promise).toEqual(['foo', 'bar', 'baz']);
       expect(promise).toBe(resolver.whenDone());
     });
     it('rejects resulting promise after its construction', async () => {
@@ -51,7 +51,7 @@ describe('EveryPromiseResolver', () => {
       resolver.add(Promise.resolve('foo'), Promise.resolve('bar'));
       resolver.add(Promise.resolve('baz'));
 
-      expect(await promise).toEqual(['foo', 'bar']);
+      expect(await promise).toEqual(['foo', 'bar', 'baz']);
       expect(promise).toBe(resolver.whenDone());
     });
     it('resolves resulting promise to empty array when called without parameters', async () => {
