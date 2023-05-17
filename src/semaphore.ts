@@ -179,8 +179,8 @@ export interface SemaphoreInit {
   /**
    * Explicit semaphore supply.
    *
-   * No more locks can not be acquired one this supply cut off. All {@link Semaphore#acquire} method calls would
-   * result to an error after that.
+   * Locks can not be acquired once this supply cut off. All {@link Semaphore#acquire} method calls would result to an
+   * error after that.
    */
   readonly supply?: Supply | undefined;
 }

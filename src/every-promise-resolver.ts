@@ -3,8 +3,8 @@ import { PromiseResolver } from './promise-resolver.js';
 /**
  * A resolver of every input promise that can be created later or not created at all.
  *
- * Promises to resolve can be passed to constructor, or {@link add added} later, but not before the resulting
- * promise {@link whenDone created}.
+ * Promises to resolve can be passed to constructor, or {@link add added} later, but not after the
+ * {@link whenDone resulting promise} fulfilled.
  *
  * Creates the resulting promise only on demand.
  *
@@ -19,7 +19,7 @@ export class EveryPromiseResolver<in out T = void> {
    *
    * Has no effect when the resulting promise already settled.
    *
-   * Can be called before the promise created.
+   * Can be called before the {@link whenDone resulting promise} fulfilled.
    *
    * Calling without arguments causes the {@link whenDone resulting promise} to resolve.
    *
