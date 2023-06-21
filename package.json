@@ -24,8 +24,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@proc7ts/primitives": "4.0.1",
-    "@proc7ts/supply": "2.0.1"
+    "@proc7ts/primitives": "4.0.1"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",

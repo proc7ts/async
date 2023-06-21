@@ -1,6 +1,5 @@
 import { noop } from '@proc7ts/primitives';
-import { Supplier, Supply, SupplyIsOff, SupplyReceiver } from '@proc7ts/supply';
-import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
+import { LockFailedError } from './lock-failed.error.js';
 
 /**
  * [Semaphore](https://en.wikipedia.org/wiki/Semaphore_(programming)) instance.
@@ -12,10 +11,10 @@ import { SemaphoreRevokeError } from './semaphore-revoke-error.js';
 export class Semaphore {
 
   readonly #maxPermits: number;
-  readonly #supply: Supply;
   #permits: number;
-  #head: Semaphore$User | undefined;
-  #tail: Semaphore$User | undefined;
+  #head: Semaphore$PendingAcquire | undefined;
+  #tail: Semaphore$PendingAcquire | undefined;
+  #closed: [reason: unknown] | undefined;
 
   /**
    * Constructs a semaphore.
@@ -26,14 +25,12 @@ export class Semaphore {
   constructor(init: number | SemaphoreInit = 1) {
     if (typeof init === 'number') {
       this.#permits = this.#maxPermits = Math.max(1, init);
-      this.#supply = new Supply();
     } else {
-      const { maxPermits = 1, permits, supply = new Supply() } = init;
+      const { maxPermits = 1, permits } = init;
 
       this.#maxPermits = Math.max(1, maxPermits);
       this.#permits =
         permits == null ? this.#maxPermits : Math.min(Math.max(0, permits), this.#maxPermits);
-      this.#supply = supply;
     }
   }
 
@@ -55,13 +52,12 @@ export class Semaphore {
   }
 
   /**
-   * Semaphore supply.
+   * Informs whether this semaphore is {@link close closed}.
    *
-   * No more locks can not be acquired one this supply cut off. All {@link Semaphore#acquire} method calls would
-   * result to an error after that.
+   * @returns `true` after the {@link close} method has been called, or `false` otherwise.
    */
-  get supply(): Supply {
-    return this.#supply;
+  isClosed(): boolean {
+    return !!this.#closed;
   }
 
   /**
@@ -69,18 +65,20 @@ export class Semaphore {
    *
    * Decreases the number of available {@link permits} when available, or blocks until one available.
    *
-   * @params acquirer - Semaphore acquirer supplier. The returned promise would be rejected once this supply cut off.
+   * @params acquirer - Semaphore acquire abort signal. The returned promise would be rejected once the acquire aborted.
    *
-   * @returns A promise resolved immediately if permit available, or one resolved once permit becomes available after
-   * {@link release} call.
+   * @returns A promise resolved either immediately if permit available, or once permit becomes available after
+   * {@link release} call. This promise may be rejected with {@link LockFailedError} when semaphore
+   * {@link close closed}, or when the lock acquire aborted.
    */
-  acquire(acquirer?: Supplier): Promise<void> {
-    const supply = acquirer ? this.supply.derive().needs(acquirer) : this.supply;
+  acquire(acquirer?: AbortSignal): Promise<void> {
+    const closed = this.#closed;
 
-    if (supply.isOff) {
-      const { error = new SemaphoreRevokeError() } = supply.isOff;
-
-      return Promise.reject(error);
+    if (closed) {
+      return Promise.reject(closed[0]);
+    }
+    if (acquirer?.aborted) {
+      return Promise.reject(this.#acquireAborted(acquirer));
     }
 
     if (this.#permits > 0) {
@@ -89,47 +87,40 @@ export class Semaphore {
       return Promise.resolve();
     }
 
-    return new Promise<void>((give, revoke) => {
-      this.#use(give, revoke, supply);
+    return new Promise<void>((give, abort) => {
+      this.#waitForLock(give, abort, acquirer);
     });
   }
 
-  #use(grant: () => void, revoke: (reason?: unknown) => void, supply: Supply): void {
-    const user = new Semaphore$User(grant, revoke, user => {
-      this.#remove(user);
-      done();
+  #waitForLock(grant: () => void, abort: (reason?: unknown) => void, acquirer?: AbortSignal): void {
+    const acquire = new Semaphore$PendingAcquire(grant, abort, acquire => {
+      this.#remove(acquire);
     });
 
     if (this.#tail) {
-      user.prev = this.#tail;
-      this.#tail.next = user;
-      this.#tail = user;
+      acquire.prev = this.#tail;
+      this.#tail.next = acquire;
+      this.#tail = acquire;
     } else {
-      this.#head = this.#tail = user;
+      this.#head = this.#tail = acquire;
     }
 
-    const supplyReceiver: { -readonly [TKey in keyof SupplyReceiver]: SupplyReceiver[TKey] } = {
-      isOff: null,
-      cutOff: reason => {
-        const { error = new SemaphoreRevokeError() } = reason;
+    acquirer?.addEventListener('abort', () => {
+      const { reason } = acquirer;
 
-        user.revoke(error);
-      },
-    };
+      acquire.abort(reason instanceof LockFailedError ? reason : this.#acquireAborted(acquirer));
+    });
+  }
 
-    supply.alsoOff(supplyReceiver);
-
-    function done(): void {
-      supplyReceiver.isOff = new SupplyIsOff();
-      supplyReceiver.cutOff = noop;
-    }
+  #acquireAborted({ reason }: AbortSignal): LockFailedError {
+    return new LockFailedError('Lock acquire aborted', { cause: reason });
   }
 
   /**
-   * Releases lock.
+   * Releases previously {@link acquire acquired} lock.
    *
-   * Increases the number of available {@link permits}. If there are promises await for lock, the very first one
-   * receives it, while the rest continue to wait.
+   * Increases the number of available {@link permits}. If there are pending acquires awaiting for the lock, the very
+   * first one receives it, while the rest continue to wait.
    */
   release(): void {
     const head = this.#head;
@@ -143,20 +134,44 @@ export class Semaphore {
     }
   }
 
-  #remove(user: Semaphore$User): void {
-    const { prev, next } = user;
+  #remove(acquire: Semaphore$PendingAcquire): void {
+    const { prev, next } = acquire;
 
     if (prev) {
       prev.next = next;
-      delete user.prev;
+      delete acquire.prev;
     } else {
       this.#head = next;
     }
     if (next) {
       next.prev = prev;
-      delete user.next;
+      delete acquire.next;
     } else {
       this.#tail = prev;
+    }
+  }
+
+  /**
+   * Closes semaphore and aborts all pending lock {@link acquire acquires} with the given `reason`.
+   *
+   * Locks can not be acquired once semaphore closed. All {@link acquire} method calls would result to an
+   * error after that.
+   *
+   * @param reason - Optional acquire abort reason. Defaults to {@link LockFailedError} with appropriate message.
+   */
+  close(reason = new LockFailedError('Semaphore closed')): void {
+    if (!this.#closed) {
+      this.#closed = [reason];
+      this.#abortAll(reason);
+    }
+  }
+
+  #abortAll(reason: unknown): void {
+    let acquire = this.#head;
+
+    while (acquire) {
+      acquire.abort(reason);
+      acquire = acquire.next;
     }
   }
 
@@ -167,7 +182,7 @@ export class Semaphore {
  */
 export interface SemaphoreInit {
   /**
-   * The maximum simultaneous {@link Semaphore#acquire acquires} permitted. `1` by default.
+   * The maximum simultaneous {@link acquire acquires} permitted. `1` by default.
    */
   readonly maxPermits?: number | undefined;
 
@@ -175,44 +190,36 @@ export interface SemaphoreInit {
    * The number of initially available permits. Defaults to {@link maxPermits}.
    */
   readonly permits?: number | undefined;
-
-  /**
-   * Explicit semaphore supply.
-   *
-   * Locks can not be acquired once this supply cut off. All {@link Semaphore#acquire} method calls would result to an
-   * error after that.
-   */
-  readonly supply?: Supply | undefined;
 }
 
-class Semaphore$User {
+class Semaphore$PendingAcquire {
 
   #grant: () => void;
-  #revoke: (reason: unknown) => void;
-  #drop: (user: Semaphore$User) => void;
-  prev?: Semaphore$User;
-  next?: Semaphore$User;
+  #abort: (reason: unknown) => void;
+  #drop: (acquire: Semaphore$PendingAcquire) => void;
+  prev?: Semaphore$PendingAcquire;
+  next?: Semaphore$PendingAcquire;
 
   constructor(
     grant: () => void,
-    revoke: (reason: unknown) => void,
-    drop: (user: Semaphore$User) => void,
+    abort: (reason: unknown) => void,
+    drop: (acquire: Semaphore$PendingAcquire) => void,
   ) {
     this.#grant = grant;
-    this.#revoke = revoke;
+    this.#abort = abort;
     this.#drop = drop;
   }
 
   grant(): void {
     this.#drop(this);
     this.#grant();
-    this.#drop = this.#grant = this.#revoke = noop;
+    this.#drop = this.#grant = this.#abort = noop;
   }
 
-  revoke(reason: unknown): void {
+  abort(reason: unknown): void {
     this.#drop(this);
-    this.#revoke(reason);
-    this.#drop = this.#grant = this.#revoke = noop;
+    this.#abort(reason);
+    this.#drop = this.#grant = this.#abort = noop;
   }
 
 }
