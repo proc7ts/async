@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["DOM", "ES2022"],
     "outDir": "target/js",
-    "types": []
+    "typeRoots": ["node_modules/@types"],
+    "types": ["node"]
   },
   "include": ["src/**/*"]
 }
