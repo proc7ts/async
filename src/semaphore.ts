@@ -182,7 +182,7 @@ export class Semaphore {
  */
 export interface SemaphoreInit {
   /**
-   * The maximum simultaneous {@link acquire acquires} permitted. `1` by default.
+   * The maximum simultaneous {@link Semaphore#acquire acquires} permitted. `1` by default.
    */
   readonly maxPermits?: number | undefined;
 
