@@ -9,7 +9,6 @@ import { LockFailedError } from './lock-failed.error.js';
  * It is expected that each {@link acquire} is followed by corresponding {@link release}.
  */
 export class Semaphore {
-
   readonly #maxPermits: number;
   #permits: number;
   #head: Semaphore$PendingAcquire | undefined;
@@ -174,7 +173,6 @@ export class Semaphore {
       acquire = acquire.next;
     }
   }
-
 }
 
 /**
@@ -193,7 +191,6 @@ export interface SemaphoreInit {
 }
 
 class Semaphore$PendingAcquire {
-
   #grant: () => void;
   #abort: (reason: unknown) => void;
   #drop: (acquire: Semaphore$PendingAcquire) => void;
@@ -221,5 +218,4 @@ class Semaphore$PendingAcquire {
     this.#abort(reason);
     this.#drop = this.#grant = this.#abort = noop;
   }
-
 }

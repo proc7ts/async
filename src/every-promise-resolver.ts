@@ -13,7 +13,6 @@ import { PromiseResolver } from './promise-resolver.js';
  * @typeParam T - The type of value the input promises resolve to.
  */
 export class EveryPromiseResolver<in out T = void> {
-
   /**
    * Adds promise(s) to resolve.
    *
@@ -83,5 +82,4 @@ export class EveryPromiseResolver<in out T = void> {
       this.add(...promises);
     }
   }
-
 }

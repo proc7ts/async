@@ -12,7 +12,9 @@ const setImmediate = globalThis.setImmediate ?? globalThis.setTimeout;
  * [setTimeout]: https://developer.mozilla.org/docs/Web/API/setTimeout
  */
 export function whenNextEvent(): Promise<void> {
-  return new Promise(resolve => setImmediate(() => {
+  return new Promise(resolve =>
+    setImmediate(() => {
       resolve();
-    }));
+    }),
+  );
 }

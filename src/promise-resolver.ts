@@ -10,7 +10,6 @@ import { isPromiseLike, lazyValue, noop } from '@proc7ts/primitives';
  * @typeParam T - The type of value the promise resolves to.
  */
 export class PromiseResolver<in out T = void> {
-
   /**
    * Resolves the promise.
    *
@@ -66,7 +65,8 @@ export class PromiseResolver<in out T = void> {
       settle(() => Promise.reject(reason));
     };
     let buildPromise = lazyValue(
-      () => new Promise<T>((resolve, reject) => {
+      () =>
+        new Promise<T>((resolve, reject) => {
           resolvePromise = resolve;
           rejectPromise = reject;
         }),
@@ -76,5 +76,4 @@ export class PromiseResolver<in out T = void> {
     this.reject = reason => rejectPromise(reason);
     this.whenDone = () => buildPromise();
   }
-
 }
